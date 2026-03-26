@@ -62,25 +62,23 @@ func FormatReport(results []Result, onlyBroken bool, dir string) string {
 		}
 	}
 
-	if !onlyBroken {
-		if len(ok) > 0 {
-			fmt.Fprintf(&buf, "%s\n\nOK LINKS (%d)\n\n", strings.Repeat("-", 60), len(ok))
-			for _, r := range ok {
-				fmt.Fprintf(&buf, "  [%d] %s\n", r.StatusCode, r.URL)
-				for _, f := range r.Files {
-					fmt.Fprintf(&buf, "      File: %s\n", f)
-				}
+	if !onlyBroken && len(ok) > 0 {
+		fmt.Fprintf(&buf, "%s\n\nOK LINKS (%d)\n\n", strings.Repeat("-", 60), len(ok))
+		for _, r := range ok {
+			fmt.Fprintf(&buf, "  [%d] %s\n", r.StatusCode, r.URL)
+			for _, f := range r.Files {
+				fmt.Fprintf(&buf, "      File: %s\n", f)
 			}
 		}
+	}
 
-		if len(skipped) > 0 {
-			fmt.Fprintf(&buf, "%s\n\nSKIPPED LINKS (%d)\n", strings.Repeat("-", 60), len(skipped))
-			fmt.Fprintf(&buf, "(matched --skip-pattern, not checked)\n\n")
-			for _, r := range skipped {
-				fmt.Fprintf(&buf, "  %s\n", r.URL)
-				for _, f := range r.Files {
-					fmt.Fprintf(&buf, "      File: %s\n", f)
-				}
+	if len(skipped) > 0 {
+		fmt.Fprintf(&buf, "%s\n\nSKIPPED LINKS (%d)\n", strings.Repeat("-", 60), len(skipped))
+		fmt.Fprintf(&buf, "(matched --skip-pattern, not checked)\n\n")
+		for _, r := range skipped {
+			fmt.Fprintf(&buf, "  %s\n", r.URL)
+			for _, f := range r.Files {
+				fmt.Fprintf(&buf, "      File: %s\n", f)
 			}
 		}
 	}

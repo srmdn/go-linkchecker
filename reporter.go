@@ -12,12 +12,12 @@ import (
 
 // SMTPConfig holds email delivery settings.
 type SMTPConfig struct {
-	Host     string
-	Port     string
-	User     string
-	Pass     string
-	From     string
-	To       string
+	Host string
+	Port string
+	User string
+	Pass string
+	From string
+	To   string
 }
 
 // FormatReport builds a plain-text report from results.
@@ -52,13 +52,20 @@ func FormatReport(results []Result, onlyBroken bool, dir string) string {
 		} else {
 			reason = fmt.Sprintf("HTTP %d", r.StatusCode)
 		}
-		fmt.Fprintf(&buf, "  [%s]\n  %s\n  File: %s\n\n", reason, r.URL, r.File)
+		fmt.Fprintf(&buf, "  [%s]\n  %s\n", reason, r.URL)
+		for _, f := range r.Files {
+			fmt.Fprintf(&buf, "  File: %s\n", f)
+		}
+		fmt.Fprintln(&buf)
 	}
 
 	if !onlyBroken && len(ok) > 0 {
 		fmt.Fprintf(&buf, "%s\n\nOK LINKS (%d)\n\n", strings.Repeat("-", 60), len(ok))
 		for _, r := range ok {
-			fmt.Fprintf(&buf, "  [%d] %s\n      File: %s\n", r.StatusCode, r.URL, r.File)
+			fmt.Fprintf(&buf, "  [%d] %s\n", r.StatusCode, r.URL)
+			for _, f := range r.Files {
+				fmt.Fprintf(&buf, "      File: %s\n", f)
+			}
 		}
 	}
 

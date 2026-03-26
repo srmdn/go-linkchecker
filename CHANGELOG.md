@@ -1,5 +1,10 @@
 # Changelog
 
+## v0.3.0 — 2026-03-26
+
+- Three-section report: Broken, OK, Skipped — skipped URLs are visible, not hidden inside OK count
+- `--skip-pattern` docs improved: explains when and why to use it (bot-hostile sites, affiliate links, local URLs)
+
 ## v0.2.0 — 2026-03-26
 
 - HEAD → GET fallback: tries HEAD first, retries with GET on 403/405

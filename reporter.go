@@ -24,11 +24,14 @@ type SMTPConfig struct {
 func FormatReport(results []Result, onlyBroken bool, dir string) string {
 	var buf bytes.Buffer
 
-	var broken, ok []Result
+	var broken, ok, skipped []Result
 	for _, r := range results {
-		if r.IsBroken() {
+		switch {
+		case r.Skipped:
+			skipped = append(skipped, r)
+		case r.IsBroken():
 			broken = append(broken, r)
-		} else {
+		default:
 			ok = append(ok, r)
 		}
 	}
@@ -36,35 +39,48 @@ func FormatReport(results []Result, onlyBroken bool, dir string) string {
 	fmt.Fprintf(&buf, "go-linkchecker report\n")
 	fmt.Fprintf(&buf, "Generated: %s\n", time.Now().Format(time.RFC1123))
 	fmt.Fprintf(&buf, "Directory: %s\n", dir)
-	fmt.Fprintf(&buf, "Checked:   %d links | Broken: %d | OK: %d\n", len(results), len(broken), len(ok))
+	fmt.Fprintf(&buf, "Checked: %d | Broken: %d | OK: %d | Skipped: %d\n",
+		len(broken)+len(ok), len(broken), len(ok), len(skipped))
 	fmt.Fprintf(&buf, "%s\n\n", strings.Repeat("-", 60))
 
 	if len(broken) == 0 {
-		fmt.Fprintln(&buf, "All links are healthy.")
-		return buf.String()
-	}
-
-	fmt.Fprintf(&buf, "BROKEN LINKS (%d)\n\n", len(broken))
-	for _, r := range broken {
-		reason := ""
-		if r.Err != nil {
-			reason = r.Err.Error()
-		} else {
-			reason = fmt.Sprintf("HTTP %d", r.StatusCode)
-		}
-		fmt.Fprintf(&buf, "  [%s]\n  %s\n", reason, r.URL)
-		for _, f := range r.Files {
-			fmt.Fprintf(&buf, "  File: %s\n", f)
-		}
-		fmt.Fprintln(&buf)
-	}
-
-	if !onlyBroken && len(ok) > 0 {
-		fmt.Fprintf(&buf, "%s\n\nOK LINKS (%d)\n\n", strings.Repeat("-", 60), len(ok))
-		for _, r := range ok {
-			fmt.Fprintf(&buf, "  [%d] %s\n", r.StatusCode, r.URL)
+		fmt.Fprintln(&buf, "All checked links are healthy.")
+	} else {
+		fmt.Fprintf(&buf, "BROKEN LINKS (%d)\n\n", len(broken))
+		for _, r := range broken {
+			reason := ""
+			if r.Err != nil {
+				reason = r.Err.Error()
+			} else {
+				reason = fmt.Sprintf("HTTP %d", r.StatusCode)
+			}
+			fmt.Fprintf(&buf, "  [%s]\n  %s\n", reason, r.URL)
 			for _, f := range r.Files {
-				fmt.Fprintf(&buf, "      File: %s\n", f)
+				fmt.Fprintf(&buf, "  File: %s\n", f)
+			}
+			fmt.Fprintln(&buf)
+		}
+	}
+
+	if !onlyBroken {
+		if len(ok) > 0 {
+			fmt.Fprintf(&buf, "%s\n\nOK LINKS (%d)\n\n", strings.Repeat("-", 60), len(ok))
+			for _, r := range ok {
+				fmt.Fprintf(&buf, "  [%d] %s\n", r.StatusCode, r.URL)
+				for _, f := range r.Files {
+					fmt.Fprintf(&buf, "      File: %s\n", f)
+				}
+			}
+		}
+
+		if len(skipped) > 0 {
+			fmt.Fprintf(&buf, "%s\n\nSKIPPED LINKS (%d)\n", strings.Repeat("-", 60), len(skipped))
+			fmt.Fprintf(&buf, "(matched --skip-pattern, not checked)\n\n")
+			for _, r := range skipped {
+				fmt.Fprintf(&buf, "  %s\n", r.URL)
+				for _, f := range r.Files {
+					fmt.Fprintf(&buf, "      File: %s\n", f)
+				}
 			}
 		}
 	}

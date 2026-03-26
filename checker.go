@@ -16,11 +16,12 @@ type Result struct {
 	Files      []string
 	StatusCode int
 	Err        error
+	Skipped    bool // true if matched --skip-pattern
 }
 
 // IsBroken returns true if the link is broken (error or non-2xx/3xx status).
 func (r Result) IsBroken() bool {
-	return r.Err != nil || (r.StatusCode != 0 && r.StatusCode >= 400)
+	return !r.Skipped && (r.Err != nil || (r.StatusCode != 0 && r.StatusCode >= 400))
 }
 
 // CheckConfig holds configuration for the link checker.
@@ -32,9 +33,12 @@ type CheckConfig struct {
 
 // CheckLinks checks all unique URLs extracted from the given files concurrently.
 // Each URL is checked once regardless of how many files contain it.
+// Skipped URLs (matched by SkipPattern) are included in results with Skipped=true.
 func CheckLinks(files []string, cfg CheckConfig) []Result {
 	// Build global URL → files map (deduplication across all files)
 	urlFiles := make(map[string][]string)
+	var skippedURLs []string
+
 	for _, file := range files {
 		urls, err := ExtractURLs(file)
 		if err != nil {
@@ -42,18 +46,30 @@ func CheckLinks(files []string, cfg CheckConfig) []Result {
 		}
 		for _, u := range urls {
 			if cfg.SkipPattern != nil && cfg.SkipPattern.MatchString(u) {
+				// Track skipped URLs with their files too
+				urlFiles[u] = appendUnique(urlFiles[u], file)
+				if !contains(skippedURLs, u) {
+					skippedURLs = append(skippedURLs, u)
+				}
 				continue
 			}
-			urlFiles[u] = append(urlFiles[u], file)
+			urlFiles[u] = appendUnique(urlFiles[u], file)
 		}
 	}
 
-	// Collect unique URLs
-	urls := make([]string, 0, len(urlFiles))
-	for u := range urlFiles {
-		urls = append(urls, u)
+	// Separate URLs to check vs skip
+	var toCheck []string
+	skippedSet := make(map[string]bool)
+	for _, u := range skippedURLs {
+		skippedSet[u] = true
 	}
-	sort.Strings(urls)
+	for u := range urlFiles {
+		if !skippedSet[u] {
+			toCheck = append(toCheck, u)
+		}
+	}
+	sort.Strings(toCheck)
+	sort.Strings(skippedURLs)
 
 	client := &http.Client{
 		Timeout: cfg.Timeout,
@@ -65,8 +81,8 @@ func CheckLinks(files []string, cfg CheckConfig) []Result {
 		},
 	}
 
-	jobs := make(chan string, len(urls))
-	results := make(chan Result, len(urls))
+	jobs := make(chan string, len(toCheck))
+	results := make(chan Result, len(toCheck))
 
 	var wg sync.WaitGroup
 	for i := 0; i < cfg.Concurrency; i++ {
@@ -81,7 +97,7 @@ func CheckLinks(files []string, cfg CheckConfig) []Result {
 		}()
 	}
 
-	for _, u := range urls {
+	for _, u := range toCheck {
 		jobs <- u
 	}
 	close(jobs)
@@ -93,6 +109,16 @@ func CheckLinks(files []string, cfg CheckConfig) []Result {
 	for r := range results {
 		all = append(all, r)
 	}
+
+	// Append skipped results
+	for _, u := range skippedURLs {
+		all = append(all, Result{
+			URL:     u,
+			Files:   urlFiles[u],
+			Skipped: true,
+		})
+	}
+
 	return all
 }
 
@@ -132,4 +158,22 @@ func doRequest(client *http.Client, method, url string) Result {
 	defer resp.Body.Close()
 
 	return Result{URL: url, StatusCode: resp.StatusCode}
+}
+
+func appendUnique(slice []string, s string) []string {
+	for _, v := range slice {
+		if v == s {
+			return slice
+		}
+	}
+	return append(slice, s)
+}
+
+func contains(slice []string, s string) bool {
+	for _, v := range slice {
+		if v == s {
+			return true
+		}
+	}
+	return false
 }

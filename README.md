@@ -6,9 +6,11 @@ A fast, zero-dependency link checker for markdown files. Scans `.md` files recur
 
 - Scans all `.md` files in a directory recursively
 - Concurrent HTTP checks (configurable)
-- Plain-text report: broken links with file location and error reason
+- HEAD → GET fallback — handles sites that block HEAD requests
+- Global URL deduplication — same URL across multiple files checked once
+- Three-section report: **Broken**, **OK**, and **Skipped**
 - Optional email delivery via SMTPS (port 465)
-- Skip URLs by regex pattern
+- Skip URLs by regex pattern (useful for bot-hostile or trusted domains)
 - CI-friendly: exits with code `1` if broken links found
 - Zero external dependencies — standard library only
 
@@ -56,11 +58,66 @@ Save report to file:
 go-linkchecker --only-broken --output report.txt ./content/blog
 ```
 
-Skip URLs matching a pattern:
+## Skipping URLs
+
+Use `--skip-pattern` to skip URLs you don't want checked. Skipped URLs still appear in the report under a **SKIPPED** section so you always have full visibility — they are not silently hidden.
+
+Common reasons to skip a URL:
+
+- **Bot-hostile sites** — some sites (e.g. Wikipedia, OpenAI) return HTTP 403 to all automated requests even though the page is live. They aren't broken, just blocking crawlers.
+- **Affiliate or redirect links** — short links that redirect to third-party destinations you don't control.
+- **Local/dev URLs** — `localhost`, `127.0.0.1`, staging domains.
 
 ```sh
+# Skip local URLs
 go-linkchecker --skip-pattern "localhost|127\.0\.0\.1" ./content/blog
+
+# Skip known bot-hostile domains
+go-linkchecker --skip-pattern "wikipedia\.org|openai\.com" ./content/blog
+
+# Combine multiple patterns
+go-linkchecker --skip-pattern "localhost|wikipedia\.org|openai\.com|yourshortlinks\.com" ./content/blog
 ```
+
+The pattern is a regular expression matched against the full URL. Dots in domain names should be escaped (`\.`).
+
+## Report Format
+
+The report has three sections:
+
+```
+Checked: 24 | Broken: 1 | OK: 23 | Skipped: 3
+------------------------------------------------------------
+
+BROKEN LINKS (1)
+
+  [HTTP 404]
+  https://example.com/old-page
+  File: ./content/blog/my-post/index.md
+
+------------------------------------------------------------
+
+OK LINKS (23)
+
+  [200] https://github.com/...
+      File: ./content/blog/my-post/index.md
+  ...
+
+------------------------------------------------------------
+
+SKIPPED LINKS (3)
+(matched --skip-pattern, not checked)
+
+  https://wikipedia.org/...
+      File: ./content/blog/my-post/index.md
+  ...
+```
+
+- **Broken** — checked and returned 4xx/5xx or a network error
+- **OK** — checked and returned 2xx/3xx
+- **Skipped** — matched `--skip-pattern`, not checked
+
+Use `--only-broken` to hide the OK and Skipped sections (useful for email reports or CI).
 
 ## Email Reports
 
@@ -86,7 +143,7 @@ By default, email is only sent if broken links are found (`--email-only-broken=t
 | `--timeout` | `10s` | HTTP request timeout per link |
 | `--concurrency` | `5` | Concurrent link checks |
 | `--only-broken` | `false` | Only show broken links in report |
-| `--skip-pattern` | `` | Regex — skip matching URLs |
+| `--skip-pattern` | `` | Regex — skip matching URLs (shown as Skipped in report) |
 | `--output` | `` | Write report to file |
 | `--smtp-host` | `` | SMTP host |
 | `--smtp-port` | `465` | SMTP port (TLS) |
@@ -110,7 +167,7 @@ Type=oneshot
 User=youruser
 WorkingDirectory=/your/site/dir
 EnvironmentFile=/etc/linkchecker.env
-ExecStart=/usr/local/bin/go-linkchecker --only-broken ./content/blog
+ExecStart=/usr/local/bin/go-linkchecker --only-broken --skip-pattern "localhost|wikipedia\.org" ./content/blog
 StandardOutput=journal
 StandardError=journal
 ```
@@ -137,7 +194,7 @@ systemctl enable --now linkchecker.timer
 
 | Code | Meaning |
 |---|---|
-| `0` | All links healthy (or no links found) |
+| `0` | All checked links healthy (skipped links do not affect exit code) |
 | `1` | One or more broken links found |
 
 ## License

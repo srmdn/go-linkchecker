@@ -13,6 +13,22 @@ Thanks for your interest in contributing.
 
 Use the bug report template. Include: Go version, OS, reproduction steps, and the output.
 
+## Commit Messages
+
+Follow [Conventional Commits](https://www.conventionalcommits.org/):
+
+```
+feat: add retry on 5xx errors
+fix: skip URLs inside fenced code blocks
+docs: add skip-pattern usage examples
+refactor: extract URL dedup into helper
+chore: upgrade to Go 1.23
+```
+
+Types: `feat`, `fix`, `docs`, `refactor`, `perf`, `test`, `chore`, `ci`
+
+Breaking changes: add `!` after the type (`feat!: rename flag`) — this signals a MAJOR version bump.
+
 ## Pull Requests
 
 - Open an issue first for non-trivial changes.

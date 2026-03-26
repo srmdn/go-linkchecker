@@ -1,0 +1,31 @@
+# OS
+.DS_Store
+Thumbs.db
+
+# Editor / IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# AI tool sessions / memory
+.claude/
+.codex/
+.cursor/
+.aider*
+
+# Environment / secrets
+.env
+.env.*
+*.key
+
+# Go
+go-linkchecker
+*.exe
+*.out
+*.test
+
+# Reports
+*.txt
+report-*.txt

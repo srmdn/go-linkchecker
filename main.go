@@ -12,9 +12,10 @@ func main() {
 	var (
 		timeout     = flag.Duration("timeout", 10*time.Second, "HTTP request timeout per link")
 		concurrency = flag.Int("concurrency", 5, "Number of concurrent link checks")
-		onlyBroken  = flag.Bool("only-broken", false, "Only show broken links in report")
-		skipPattern = flag.String("skip-pattern", "", "Regex pattern — skip matching URLs")
-		output      = flag.String("output", "", "Write report to file (default: stdout only)")
+		onlyBroken        = flag.Bool("only-broken", false, "Only show broken links in report")
+		skipPattern       = flag.String("skip-pattern", "", "Regex pattern — skip matching URLs")
+		noFollowRedirects = flag.Bool("no-follow-redirects", false, "Treat HTTP 3xx as OK — do not follow redirects")
+		output            = flag.String("output", "", "Write report to file (default: stdout only)")
 
 		smtpHost = flag.String("smtp-host", envOr("LINKCHECKER_SMTP_HOST", ""), "SMTP host")
 		smtpPort = flag.String("smtp-port", envOr("LINKCHECKER_SMTP_PORT", "465"), "SMTP port (TLS)")
@@ -75,9 +76,10 @@ func main() {
 
 	// Run checks
 	cfg := CheckConfig{
-		Timeout:     *timeout,
-		Concurrency: *concurrency,
-		SkipPattern: skip,
+		Timeout:           *timeout,
+		Concurrency:       *concurrency,
+		SkipPattern:       skip,
+		NoFollowRedirects: *noFollowRedirects,
 	}
 	results := CheckLinks(files, cfg)
 

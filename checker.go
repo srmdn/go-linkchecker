@@ -26,9 +26,10 @@ func (r Result) IsBroken() bool {
 
 // CheckConfig holds configuration for the link checker.
 type CheckConfig struct {
-	Timeout     time.Duration
-	Concurrency int
-	SkipPattern *regexp.Regexp
+	Timeout           time.Duration
+	Concurrency       int
+	SkipPattern       *regexp.Regexp
+	NoFollowRedirects bool
 }
 
 // CheckLinks checks all unique URLs extracted from the given files concurrently.
@@ -71,14 +72,20 @@ func CheckLinks(files []string, cfg CheckConfig) []Result {
 	sort.Strings(toCheck)
 	sort.Strings(skippedURLs)
 
+	redirectPolicy := func(req *http.Request, via []*http.Request) error {
+		if len(via) >= 10 {
+			return fmt.Errorf("too many redirects")
+		}
+		return nil
+	}
+	if cfg.NoFollowRedirects {
+		redirectPolicy = func(_ *http.Request, _ []*http.Request) error {
+			return http.ErrUseLastResponse
+		}
+	}
 	client := &http.Client{
-		Timeout: cfg.Timeout,
-		CheckRedirect: func(req *http.Request, via []*http.Request) error {
-			if len(via) >= 10 {
-				return fmt.Errorf("too many redirects")
-			}
-			return nil
-		},
+		Timeout:       cfg.Timeout,
+		CheckRedirect: redirectPolicy,
 	}
 
 	jobs := make(chan string, len(toCheck))

@@ -64,8 +64,8 @@ Use `--skip-pattern` to skip URLs you don't want checked. Skipped URLs still app
 
 Common reasons to skip a URL:
 
-- **Bot-hostile sites** — some sites (e.g. Wikipedia, OpenAI) return HTTP 403 to all automated requests even though the page is live. They aren't broken, just blocking crawlers.
-- **Affiliate or redirect links** — short links that redirect to third-party destinations you don't control.
+- **Bot-hostile sites** — some sites return HTTP 403 to all automated requests even though the page is live. They aren't broken, just blocking crawlers. Common examples: Wikipedia, OpenAI, Cloudflare community forum (`community.cloudflare.com`).
+- **Affiliate or redirect links** — short links that redirect to third-party destinations you don't control. See also `--no-follow-redirects`.
 - **Local/dev URLs** — `localhost`, `127.0.0.1`, staging domains.
 
 ```sh
@@ -73,10 +73,16 @@ Common reasons to skip a URL:
 go-linkchecker --skip-pattern "localhost|127\.0\.0\.1" ./content/blog
 
 # Skip known bot-hostile domains
-go-linkchecker --skip-pattern "wikipedia\.org|openai\.com" ./content/blog
+go-linkchecker --skip-pattern "wikipedia\.org|openai\.com|community\.cloudflare\.com" ./content/blog
 
 # Combine multiple patterns
 go-linkchecker --skip-pattern "localhost|wikipedia\.org|openai\.com|yourshortlinks\.com" ./content/blog
+```
+
+If you use a URL shortener or affiliate links that redirect to bot-hostile destinations, use `--no-follow-redirects` instead. This treats any HTTP 3xx response as OK without following the chain:
+
+```sh
+go-linkchecker --no-follow-redirects ./content/blog
 ```
 
 The pattern is a regular expression matched against the full URL. Dots in domain names should be escaped (`\.`).
@@ -144,6 +150,7 @@ By default, email is only sent if broken links are found (`--email-only-broken=t
 | `--concurrency` | `5` | Concurrent link checks |
 | `--only-broken` | `false` | Only show broken links in report |
 | `--skip-pattern` | `` | Regex — skip matching URLs (shown as Skipped in report) |
+| `--no-follow-redirects` | `false` | Treat HTTP 3xx as OK — do not follow redirects |
 | `--output` | `` | Write report to file |
 | `--smtp-host` | `` | SMTP host |
 | `--smtp-port` | `465` | SMTP port (TLS) |

@@ -1,5 +1,10 @@
 # Changelog
 
+## v0.4.0 — 2026-04-27
+
+- `--no-follow-redirects` flag: treat HTTP 3xx as OK without following the redirect chain — fixes false positives from short links or affiliate links whose final destination blocks bots
+- README: document `community.cloudflare.com` as a known bot-hostile domain alongside Wikipedia and OpenAI
+
 ## v0.3.0 — 2026-03-26
 
 - Three-section report: Broken, OK, Skipped — skipped URLs are visible, not hidden inside OK count

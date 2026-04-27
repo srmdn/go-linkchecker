@@ -1,6 +1,6 @@
 # go-linkchecker
 
-A fast, zero-dependency link checker for markdown files. Scans `.md` files recursively, checks every HTTP/HTTPS URL, and reports broken links. Built for self-hosted blogs and static sites. very useful to have
+A fast, zero-dependency link checker for markdown files. Scans `.md` files recursively, checks every HTTP/HTTPS URL, and reports broken links. Built for self-hosted blogs and static sites.
 
 ## Features
 

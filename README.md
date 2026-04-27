@@ -14,6 +14,12 @@ A fast, zero-dependency link checker for markdown files. Scans `.md` files recur
 - CI-friendly: exits with code `1` if broken links found
 - Zero external dependencies — standard library only
 
+## Works with
+
+**Supported:** any stack that stores content as `.md` files on disk — Hugo, Jekyll, Astro, Eleventy, VitePress, and similar static site generators.
+
+**Not supported (yet):** WordPress, database-backed CMS, MDX, HTML files, or live site crawling. See [issue #2](https://github.com/srmdn/go-linkchecker/issues/2) for the roadmap.
+
 ## Install
 
 ```sh

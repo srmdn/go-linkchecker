@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"os"
 	"regexp"
+	"strconv"
+	"strings"
 	"time"
 )
 
@@ -13,8 +15,9 @@ func main() {
 		timeout     = flag.Duration("timeout", 10*time.Second, "HTTP request timeout per link")
 		concurrency = flag.Int("concurrency", 5, "Number of concurrent link checks")
 		onlyBroken        = flag.Bool("only-broken", false, "Only show broken links in report")
-		skipPattern       = flag.String("skip-pattern", "", "Regex pattern — skip matching URLs")
-		noFollowRedirects = flag.Bool("no-follow-redirects", false, "Treat HTTP 3xx as OK — do not follow redirects")
+		skipPattern       = flag.String("skip-pattern", "", "Regex pattern -- skip matching URLs")
+		ignoreStatus      = flag.String("ignore-status", "", "Comma-separated HTTP status codes to treat as OK (e.g. 403,429)")
+		noFollowRedirects = flag.Bool("no-follow-redirects", false, "Treat HTTP 3xx as OK -- do not follow redirects")
 		output            = flag.String("output", "", "Write report to file (default: stdout only)")
 
 		smtpHost = flag.String("smtp-host", envOr("LINKCHECKER_SMTP_HOST", ""), "SMTP host")
@@ -74,12 +77,26 @@ func main() {
 
 	fmt.Fprintf(os.Stderr, "scanning %d markdown file(s) in %s ...\n", len(files), dir)
 
+	// Parse ignored status codes
+	ignoredStatus := map[int]bool{}
+	if *ignoreStatus != "" {
+		for _, s := range strings.Split(*ignoreStatus, ",") {
+			code, err := strconv.Atoi(strings.TrimSpace(s))
+			if err != nil || code < 100 || code > 599 {
+				fmt.Fprintf(os.Stderr, "error: invalid status code in --ignore-status: %q\n", s)
+				os.Exit(1)
+			}
+			ignoredStatus[code] = true
+		}
+	}
+
 	// Run checks
 	cfg := CheckConfig{
 		Timeout:           *timeout,
 		Concurrency:       *concurrency,
 		SkipPattern:       skip,
 		NoFollowRedirects: *noFollowRedirects,
+		IgnoreStatus:      ignoredStatus,
 	}
 	results := CheckLinks(files, cfg)
 

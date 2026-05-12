@@ -74,9 +74,13 @@ func FormatReport(results []Result, onlyBroken bool, dir string) string {
 
 	if len(skipped) > 0 {
 		fmt.Fprintf(&buf, "%s\n\nSKIPPED LINKS (%d)\n", strings.Repeat("-", 60), len(skipped))
-		fmt.Fprintf(&buf, "(matched --skip-pattern, not checked)\n\n")
+		fmt.Fprintf(&buf, "(matched --skip-pattern or --ignore-status)\n\n")
 		for _, r := range skipped {
-			fmt.Fprintf(&buf, "  %s\n", r.URL)
+			if r.StatusCode != 0 {
+				fmt.Fprintf(&buf, "  [HTTP %d] %s\n", r.StatusCode, r.URL)
+			} else {
+				fmt.Fprintf(&buf, "  %s\n", r.URL)
+			}
 			for _, f := range r.Files {
 				fmt.Fprintf(&buf, "      File: %s\n", f)
 			}

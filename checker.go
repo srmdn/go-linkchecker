@@ -30,6 +30,7 @@ type CheckConfig struct {
 	Concurrency       int
 	SkipPattern       *regexp.Regexp
 	NoFollowRedirects bool
+	IgnoreStatus      map[int]bool // status codes to treat as non-broken (e.g. 403 from bot-blocking)
 }
 
 // CheckLinks checks all unique URLs extracted from the given files concurrently.
@@ -99,6 +100,9 @@ func CheckLinks(files []string, cfg CheckConfig) []Result {
 			for u := range jobs {
 				r := checkURL(client, u)
 				r.Files = urlFiles[u]
+				if !r.Skipped && cfg.IgnoreStatus[r.StatusCode] {
+					r.Skipped = true
+				}
 				results <- r
 			}
 		}()

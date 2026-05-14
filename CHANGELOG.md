@@ -1,5 +1,10 @@
 # Changelog
 
+## v0.5.1 - 2026-05-14
+
+- Email summary cards now stack on mobile so stats stay visible in narrow inboxes
+- Added a responsive HTML email layout update for smaller screens
+
 ## v0.5.0 — 2026-05-14
 
 - Email reports now send as `multipart/alternative` with both plain-text and styled HTML bodies

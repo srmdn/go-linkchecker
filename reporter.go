@@ -257,41 +257,90 @@ const emailHTMLTemplate = `<!DOCTYPE html>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Weekly Link Check Report</title>
+  <style>
+    @media only screen and (max-width: 600px) {
+      body.email-body {
+        padding: 12px !important;
+      }
+
+      .email-shell {
+        border-radius: 14px !important;
+      }
+
+      .email-header,
+      .email-summary-section,
+      .email-broken-section,
+      .email-skipped-section,
+      .email-footer {
+        padding-left: 18px !important;
+        padding-right: 18px !important;
+      }
+
+      .email-summary-grid,
+      .email-summary-grid tbody,
+      .email-summary-grid tr,
+      .email-summary-grid td {
+        display: block !important;
+        width: 100% !important;
+      }
+
+      .email-summary-grid {
+        border-spacing: 0 !important;
+      }
+
+      .email-summary-card {
+        box-sizing: border-box;
+        margin-bottom: 12px !important;
+      }
+
+      .email-summary-card:last-child {
+        margin-bottom: 0 !important;
+      }
+
+      .email-title {
+        font-size: 24px !important;
+      }
+
+      .email-summary-value {
+        font-size: 24px !important;
+      }
+    }
+  </style>
 </head>
-<body style="margin:0;padding:24px;background:#f3f6fb;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:#10233a;">
-  <div style="max-width:760px;margin:0 auto;background:#ffffff;border:1px solid #dbe5f0;border-radius:18px;overflow:hidden;">
-    <div style="padding:28px 32px;background:linear-gradient(135deg,#0f2744,#174a7a);color:#ffffff;">
+<body class="email-body" style="margin:0;padding:24px;background:#f3f6fb;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:#10233a;">
+  <div class="email-shell" style="max-width:760px;margin:0 auto;background:#ffffff;border:1px solid #dbe5f0;border-radius:18px;overflow:hidden;">
+    <div class="email-header" style="padding:28px 32px;background:linear-gradient(135deg,#0f2744,#174a7a);color:#ffffff;">
       <div style="font-size:12px;letter-spacing:0.12em;text-transform:uppercase;opacity:0.78;">go-linkchecker</div>
-      <h1 style="margin:10px 0 8px;font-size:28px;line-height:1.2;">Weekly Link Check Report</h1>
+      <h1 class="email-title" style="margin:10px 0 8px;font-size:28px;line-height:1.2;">Weekly Link Check Report</h1>
       <p style="margin:0;font-size:15px;line-height:1.6;opacity:0.92;">{{.BrokenIntro}}</p>
       <p style="margin:14px 0 0;font-size:12px;opacity:0.72;">Generated {{.Summary.Generated}}</p>
     </div>
 
-    <div style="padding:24px 32px 8px;">
-      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:separate;border-spacing:12px 12px;">
+    <div class="email-summary-section" style="padding:24px 32px 8px;">
+      <table class="email-summary-grid" role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:separate;border-spacing:12px 12px;">
         <tr>
-          <td style="width:25%;background:#f6f9fc;border:1px solid #dbe5f0;border-radius:14px;padding:16px;">
+          <td class="email-summary-card" style="width:25%;background:#f6f9fc;border:1px solid #dbe5f0;border-radius:14px;padding:16px;">
             <div style="font-size:12px;text-transform:uppercase;letter-spacing:0.08em;color:#5b7289;">Checked</div>
-            <div style="margin-top:8px;font-size:28px;font-weight:700;color:#10233a;">{{.Summary.Checked}}</div>
+            <div class="email-summary-value" style="margin-top:8px;font-size:28px;font-weight:700;color:#10233a;">{{.Summary.Checked}}</div>
           </td>
-          <td style="width:25%;background:#fff4f2;border:1px solid #f2c1b8;border-radius:14px;padding:16px;">
+          <td class="email-summary-card" style="width:25%;background:#fff4f2;border:1px solid #f2c1b8;border-radius:14px;padding:16px;">
             <div style="font-size:12px;text-transform:uppercase;letter-spacing:0.08em;color:#9a4738;">Broken</div>
-            <div style="margin-top:8px;font-size:28px;font-weight:700;color:#bf3b23;">{{.Summary.Broken}}</div>
+            <div class="email-summary-value" style="margin-top:8px;font-size:28px;font-weight:700;color:#bf3b23;">{{.Summary.Broken}}</div>
           </td>
-          <td style="width:25%;background:#f3faf5;border:1px solid #c7e6cf;border-radius:14px;padding:16px;">
+          <td class="email-summary-card" style="width:25%;background:#f3faf5;border:1px solid #c7e6cf;border-radius:14px;padding:16px;">
             <div style="font-size:12px;text-transform:uppercase;letter-spacing:0.08em;color:#3b6b48;">Healthy</div>
-            <div style="margin-top:8px;font-size:28px;font-weight:700;color:#1f7a3d;">{{.Summary.OK}}</div>
+            <div class="email-summary-value" style="margin-top:8px;font-size:28px;font-weight:700;color:#1f7a3d;">{{.Summary.OK}}</div>
           </td>
-          <td style="width:25%;background:#f8f7fc;border:1px solid #ddd8ee;border-radius:14px;padding:16px;">
+          <td class="email-summary-card" style="width:25%;background:#f8f7fc;border:1px solid #ddd8ee;border-radius:14px;padding:16px;">
             <div style="font-size:12px;text-transform:uppercase;letter-spacing:0.08em;color:#695b8c;">Skipped</div>
-            <div style="margin-top:8px;font-size:28px;font-weight:700;color:#594888;">{{.Summary.Skipped}}</div>
+            <div class="email-summary-value" style="margin-top:8px;font-size:28px;font-weight:700;color:#594888;">{{.Summary.Skipped}}</div>
           </td>
         </tr>
       </table>
     </div>
 
     {{if .HasBroken}}
-    <div style="padding:8px 32px 0;">
+    <div class="email-broken-section" style="padding:8px 32px 0;">
       <h2 style="margin:0 0 14px;font-size:18px;color:#10233a;">Broken Links Requiring Attention</h2>
       {{range .BrokenItems}}
       <div style="margin-bottom:14px;padding:18px;border:1px solid #f0c0b7;border-radius:14px;background:#fff8f7;">
@@ -306,7 +355,7 @@ const emailHTMLTemplate = `<!DOCTYPE html>
     {{end}}
 
     {{if .SkippedItems}}
-    <div style="padding:18px 32px 0;">
+    <div class="email-skipped-section" style="padding:18px 32px 0;">
       <h2 style="margin:0 0 10px;font-size:18px;color:#10233a;">Skipped Links</h2>
       <p style="margin:0 0 14px;font-size:14px;line-height:1.6;color:#4f6277;">{{.SkippedExplainer}}</p>
       {{range .SkippedItems}}
@@ -321,7 +370,7 @@ const emailHTMLTemplate = `<!DOCTYPE html>
     </div>
     {{end}}
 
-    <div style="padding:24px 32px 30px;font-size:12px;line-height:1.6;color:#6a7f93;">
+    <div class="email-footer" style="padding:24px 32px 30px;font-size:12px;line-height:1.6;color:#6a7f93;">
       Generated by go-linkchecker.
     </div>
   </div>

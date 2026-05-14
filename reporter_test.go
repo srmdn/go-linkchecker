@@ -61,6 +61,26 @@ func TestFormatEmailHTML_BrokenSectionAndRelativePaths(t *testing.T) {
 	}
 }
 
+func TestFormatEmailHTML_ResponsiveSummaryGrid(t *testing.T) {
+	body, err := FormatEmailHTML(nil, "")
+	if err != nil {
+		t.Fatalf("FormatEmailHTML returned error: %v", err)
+	}
+
+	if !strings.Contains(body, `class="email-summary-grid"`) {
+		t.Fatal("expected responsive summary grid class")
+	}
+	if !strings.Contains(body, `class="email-summary-card"`) {
+		t.Fatal("expected responsive summary card class")
+	}
+	if !strings.Contains(body, "@media only screen and (max-width: 600px)") {
+		t.Fatal("expected mobile media query")
+	}
+	if !strings.Contains(body, "display: block !important;") {
+		t.Fatal("expected mobile stacked layout")
+	}
+}
+
 func TestBuildEmailMessage_UsesMultipartAlternative(t *testing.T) {
 	cfg := SMTPConfig{
 		From: "Link Checker <bot@example.com>",

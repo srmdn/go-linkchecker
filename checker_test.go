@@ -2,7 +2,6 @@ package main
 
 import (
 	"net/http"
-	"net/http/httptest"
 	"testing"
 	"time"
 )
@@ -15,12 +14,25 @@ func testConfig(ignoreStatus map[int]bool) CheckConfig {
 	}
 }
 
-// mockServer starts a test HTTP server that returns the given status code for every request.
-func mockServer(t *testing.T, status int) *httptest.Server {
-	t.Helper()
-	return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.WriteHeader(status)
-	}))
+type statusRoundTripper struct {
+	status int
+}
+
+func (rt statusRoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
+	return &http.Response{
+		StatusCode: rt.status,
+		Body:       http.NoBody,
+		Header:     make(http.Header),
+		Request:    req,
+	}, nil
+}
+
+// mockClient returns an HTTP client that always responds with the given status code.
+func mockClient(status int) *http.Client {
+	return &http.Client{
+		Timeout:   5 * time.Second,
+		Transport: statusRoundTripper{status: status},
+	}
 }
 
 func TestIsBroken_brokenOnHighStatus(t *testing.T) {
@@ -45,16 +57,13 @@ func TestIsBroken_skippedNotBroken(t *testing.T) {
 }
 
 func TestIgnoreStatus_403TreatedAsSkipped(t *testing.T) {
-	srv := mockServer(t, 403)
-	defer srv.Close()
-
 	cfg := testConfig(map[int]bool{403: true})
 	results := CheckLinks([]string{}, cfg)
 	_ = results
 
 	// Check directly via checkURL + manual skip logic (mirrors CheckLinks internals)
-	client := &http.Client{Timeout: 5 * time.Second}
-	r := checkURL(client, srv.URL)
+	client := mockClient(403)
+	r := checkURL(client, "http://example.test")
 	if r.StatusCode != 403 {
 		t.Fatalf("expected status 403, got %d", r.StatusCode)
 	}
@@ -71,11 +80,8 @@ func TestIgnoreStatus_403TreatedAsSkipped(t *testing.T) {
 }
 
 func TestIgnoreStatus_403StillBrokenWhenNotIgnored(t *testing.T) {
-	srv := mockServer(t, 403)
-	defer srv.Close()
-
-	client := &http.Client{Timeout: 5 * time.Second}
-	r := checkURL(client, srv.URL)
+	client := mockClient(403)
+	r := checkURL(client, "http://example.test")
 	if r.StatusCode != 403 {
 		t.Fatalf("expected status 403, got %d", r.StatusCode)
 	}
@@ -85,11 +91,8 @@ func TestIgnoreStatus_403StillBrokenWhenNotIgnored(t *testing.T) {
 }
 
 func TestIgnoreStatus_200NotAffected(t *testing.T) {
-	srv := mockServer(t, 200)
-	defer srv.Close()
-
-	client := &http.Client{Timeout: 5 * time.Second}
-	r := checkURL(client, srv.URL)
+	client := mockClient(200)
+	r := checkURL(client, "http://example.test")
 	if cfg := (CheckConfig{IgnoreStatus: map[int]bool{403: true}}); cfg.IgnoreStatus[r.StatusCode] {
 		r.Skipped = true
 	}
@@ -104,15 +107,13 @@ func TestIgnoreStatus_200NotAffected(t *testing.T) {
 func TestIgnoreStatus_multipleCodesIgnored(t *testing.T) {
 	ignored := map[int]bool{403: true, 429: true}
 	for _, code := range []int{403, 429} {
-		srv := mockServer(t, code)
-		client := &http.Client{Timeout: 5 * time.Second}
-		r := checkURL(client, srv.URL)
+		client := mockClient(code)
+		r := checkURL(client, "http://example.test")
 		if ignored[r.StatusCode] {
 			r.Skipped = true
 		}
 		if r.IsBroken() {
 			t.Errorf("status %d with IgnoreStatus should not be broken", code)
 		}
-		srv.Close()
 	}
 }

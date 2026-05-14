@@ -103,6 +103,9 @@ The pattern is a regular expression matched against the full URL. Dots in domain
 
 ## Report Format
 
+<img width="1589" height="2195" alt="go-linkchecker" src="https://github.com/user-attachments/assets/0591b9fa-01ac-4b0e-b614-82d2e41f3f4e" />
+
+
 The report has three sections:
 
 ```

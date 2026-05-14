@@ -1,6 +1,6 @@
 # go-linkchecker
 
-A fast, zero-dependency link checker for markdown files. Scans `.md` files recursively, checks every HTTP/HTTPS URL, and reports broken links. Built for self-hosted blogs and static sites.
+A fast, zero-dependency link checker for markdown-based content today. It scans `.md` files recursively, checks every HTTP/HTTPS URL, and reports broken links. Built for self-hosted blogs and static sites, with a roadmap toward broader content sources.
 
 Live landing page: https://srmdn.github.io/go-linkchecker/
 
@@ -18,9 +18,15 @@ Live landing page: https://srmdn.github.io/go-linkchecker/
 
 ## Works with
 
-**Supported:** any stack that stores content as `.md` files on disk - Hugo, Jekyll, Astro, Eleventy, VitePress, and similar static site generators.
+**Supported today:** any stack that stores content as `.md` files on disk - Hugo, Jekyll, Astro, Eleventy, VitePress, and similar static site generators.
 
-**Not supported (yet):** WordPress, database-backed CMS, MDX, HTML files, or live site crawling. See [issue #2](https://github.com/srmdn/go-linkchecker/issues/2) for the roadmap.
+**Not supported yet:** WordPress, database-backed CMS, MDX, HTML files, or live site crawling. See [issue #2](https://github.com/srmdn/go-linkchecker/issues/2) for the roadmap.
+
+## Roadmap
+
+- Planned: MDX and HTML support via broader file extension scanning
+- Planned: sitemap input for live sites
+- Planned: URL-list input for CMS-backed or exported content
 
 ## Install
 
@@ -102,10 +108,6 @@ go-linkchecker --no-follow-redirects ./content/blog
 The pattern is a regular expression matched against the full URL. Dots in domain names should be escaped (`\.`).
 
 ## Report Format
-
-<img width="1589" height="2195" alt="go-linkchecker" src="https://github.com/user-attachments/assets/0591b9fa-01ac-4b0e-b614-82d2e41f3f4e" />
-
-
 The report has three sections:
 
 ```
@@ -141,6 +143,10 @@ SKIPPED LINKS (3)
 - **Skipped** - matched `--skip-pattern` or `--ignore-status`, not checked
 
 Use `--only-broken` to hide the OK and Skipped sections (useful for email reports or CI).
+
+Example terminal report output:
+
+<img width="720" alt="go-linkchecker terminal report example" src="https://github.com/user-attachments/assets/0591b9fa-01ac-4b0e-b614-82d2e41f3f4e" />
 
 ## Email Reports
 

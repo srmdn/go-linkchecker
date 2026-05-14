@@ -5,36 +5,36 @@
 - Email summary cards now stack on mobile so stats stay visible in narrow inboxes
 - Added a responsive HTML email layout update for smaller screens
 
-## v0.5.0 — 2026-05-14
+## v0.5.0 - 2026-05-14
 
 - Email reports now send as `multipart/alternative` with both plain-text and styled HTML bodies
 - Email wording reworked to read like a weekly report instead of raw terminal output
 - Email bodies now show relative file paths when links are found inside the scanned directory
 - GitHub Pages landing page added with install, usage, and project links
 
-## v0.4.0 — 2026-04-27
+## v0.4.0 - 2026-04-27
 
-- `--no-follow-redirects` flag: treat HTTP 3xx as OK without following the redirect chain — fixes false positives from short links or affiliate links whose final destination blocks bots
+- `--no-follow-redirects` flag: treat HTTP 3xx as OK without following the redirect chain; fixes false positives from short links or affiliate links whose final destination blocks bots
 - README: document `community.cloudflare.com` as a known bot-hostile domain alongside Wikipedia and OpenAI
 
-## v0.3.0 — 2026-03-26
+## v0.3.0 - 2026-03-26
 
-- Three-section report: Broken, OK, Skipped — skipped URLs are visible, not hidden inside OK count
+- Three-section report: Broken, OK, Skipped; skipped URLs are visible, not hidden inside OK count
 - `--skip-pattern` docs improved: explains when and why to use it (bot-hostile sites, affiliate links, local URLs)
 
-## v0.2.0 — 2026-03-26
+## v0.2.0 - 2026-03-26
 
 - HEAD → GET fallback: tries HEAD first, retries with GET on 403/405
 - Global URL deduplication: same URL across multiple files checked once
 - Retry once on 5xx or timeout before marking as broken
 - Report shows all files containing a broken URL (not just the first)
 
-## v0.1.1 — 2026-03-26
+## v0.1.1 - 2026-03-26
 
 - Fix: skip URLs inside fenced and inline code blocks
 - Fix: skip URLs containing shell variables (`$`, `{}`) or backticks
 
-## v0.1.0 — 2026-03-26
+## v0.1.0 - 2026-03-26
 
 Initial release.
 

@@ -1,5 +1,12 @@
 # Changelog
 
+## v0.5.0 — 2026-05-14
+
+- Email reports now send as `multipart/alternative` with both plain-text and styled HTML bodies
+- Email wording reworked to read like a weekly report instead of raw terminal output
+- Email bodies now show relative file paths when links are found inside the scanned directory
+- GitHub Pages landing page added with install, usage, and project links
+
 ## v0.4.0 — 2026-04-27
 
 - `--no-follow-redirects` flag: treat HTTP 3xx as OK without following the redirect chain — fixes false positives from short links or affiliate links whose final destination blocks bots

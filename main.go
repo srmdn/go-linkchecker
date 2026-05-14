@@ -12,20 +12,20 @@ import (
 
 func main() {
 	var (
-		timeout     = flag.Duration("timeout", 10*time.Second, "HTTP request timeout per link")
-		concurrency = flag.Int("concurrency", 5, "Number of concurrent link checks")
+		timeout           = flag.Duration("timeout", 10*time.Second, "HTTP request timeout per link")
+		concurrency       = flag.Int("concurrency", 5, "Number of concurrent link checks")
 		onlyBroken        = flag.Bool("only-broken", false, "Only show broken links in report")
 		skipPattern       = flag.String("skip-pattern", "", "Regex pattern -- skip matching URLs")
 		ignoreStatus      = flag.String("ignore-status", "", "Comma-separated HTTP status codes to treat as OK (e.g. 403,429)")
 		noFollowRedirects = flag.Bool("no-follow-redirects", false, "Treat HTTP 3xx as OK -- do not follow redirects")
 		output            = flag.String("output", "", "Write report to file (default: stdout only)")
 
-		smtpHost = flag.String("smtp-host", envOr("LINKCHECKER_SMTP_HOST", ""), "SMTP host")
-		smtpPort = flag.String("smtp-port", envOr("LINKCHECKER_SMTP_PORT", "465"), "SMTP port (TLS)")
-		smtpUser = flag.String("smtp-user", envOr("LINKCHECKER_SMTP_USER", ""), "SMTP username")
-		smtpPass = flag.String("smtp-pass", envOr("LINKCHECKER_SMTP_PASS", ""), "SMTP password")
-		smtpFrom = flag.String("smtp-from", envOr("LINKCHECKER_SMTP_FROM", ""), "Email from address")
-		smtpTo   = flag.String("smtp-to", envOr("LINKCHECKER_SMTP_TO", ""), "Email recipient address")
+		smtpHost        = flag.String("smtp-host", envOr("LINKCHECKER_SMTP_HOST", ""), "SMTP host")
+		smtpPort        = flag.String("smtp-port", envOr("LINKCHECKER_SMTP_PORT", "465"), "SMTP port (TLS)")
+		smtpUser        = flag.String("smtp-user", envOr("LINKCHECKER_SMTP_USER", ""), "SMTP username")
+		smtpPass        = flag.String("smtp-pass", envOr("LINKCHECKER_SMTP_PASS", ""), "SMTP password")
+		smtpFrom        = flag.String("smtp-from", envOr("LINKCHECKER_SMTP_FROM", ""), "Email from address")
+		smtpTo          = flag.String("smtp-to", envOr("LINKCHECKER_SMTP_TO", ""), "Email recipient address")
 		emailOnlyBroken = flag.Bool("email-only-broken", true, "Only send email if broken links found")
 	)
 
@@ -136,7 +136,7 @@ func main() {
 				To:   *smtpTo,
 			}
 
-			subject := "[go-linkchecker] All links healthy"
+			subject := "[go-linkchecker] Weekly report: all checked links healthy"
 			if hasBroken {
 				brokenCount := 0
 				for _, r := range results {
@@ -144,10 +144,17 @@ func main() {
 						brokenCount++
 					}
 				}
-				subject = fmt.Sprintf("[go-linkchecker] %d broken link(s) found", brokenCount)
+				subject = fmt.Sprintf("[go-linkchecker] Weekly report: %d broken link(s)", brokenCount)
 			}
 
-			if err := SendEmail(smtpCfg, subject, report); err != nil {
+			emailText := FormatEmailText(results, dir)
+			emailHTML, err := FormatEmailHTML(results, dir)
+			if err != nil {
+				fmt.Fprintf(os.Stderr, "error rendering email: %v\n", err)
+				os.Exit(1)
+			}
+
+			if err := SendEmail(smtpCfg, subject, emailText, emailHTML); err != nil {
 				fmt.Fprintf(os.Stderr, "error sending email: %v\n", err)
 				os.Exit(1)
 			}

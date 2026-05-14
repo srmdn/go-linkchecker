@@ -9,7 +9,7 @@ A fast, zero-dependency link checker for markdown files. Scans `.md` files recur
 - HEAD → GET fallback — handles sites that block HEAD requests
 - Global URL deduplication — same URL across multiple files checked once
 - Three-section report: **Broken**, **OK**, and **Skipped**
-- Optional email delivery via SMTPS (port 465)
+- Optional multipart email delivery via SMTPS (plain-text + styled HTML)
 - Skip URLs by regex pattern (useful for bot-hostile or trusted domains)
 - CI-friendly: exits with code `1` if broken links found
 - Zero external dependencies — standard library only
@@ -147,6 +147,14 @@ go-linkchecker --only-broken ./content/blog
 ```
 
 By default, email is only sent if broken links are found (`--email-only-broken=true`). Set `--email-only-broken=false` to always send.
+
+Email delivery includes:
+
+- Plain-text fallback for simple clients
+- Styled HTML layout for inbox readability and screenshots
+- Clear summary counts for checked, broken, healthy, and skipped links
+- Action-focused broken-link section
+- Relative file paths in the email body when files are inside the scanned directory
 
 ## All Flags
 

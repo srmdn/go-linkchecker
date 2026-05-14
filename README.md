@@ -2,21 +2,23 @@
 
 A fast, zero-dependency link checker for markdown files. Scans `.md` files recursively, checks every HTTP/HTTPS URL, and reports broken links. Built for self-hosted blogs and static sites.
 
+Live landing page: https://srmdn.github.io/go-linkchecker/
+
 ## Features
 
 - Scans all `.md` files in a directory recursively
 - Concurrent HTTP checks (configurable)
-- HEAD → GET fallback — handles sites that block HEAD requests
-- Global URL deduplication — same URL across multiple files checked once
+- HEAD → GET fallback - handles sites that block HEAD requests
+- Global URL deduplication - same URL across multiple files checked once
 - Three-section report: **Broken**, **OK**, and **Skipped**
 - Optional multipart email delivery via SMTPS (plain-text + styled HTML)
-- Skip URLs by regex pattern (useful for bot-hostile or trusted domains)
+- Skip URLs by regex pattern or ignore specific HTTP status codes (useful for bot-hostile or trusted domains)
 - CI-friendly: exits with code `1` if broken links found
-- Zero external dependencies — standard library only
+- Zero external dependencies - standard library only
 
 ## Works with
 
-**Supported:** any stack that stores content as `.md` files on disk — Hugo, Jekyll, Astro, Eleventy, VitePress, and similar static site generators.
+**Supported:** any stack that stores content as `.md` files on disk - Hugo, Jekyll, Astro, Eleventy, VitePress, and similar static site generators.
 
 **Not supported (yet):** WordPress, database-backed CMS, MDX, HTML files, or live site crawling. See [issue #2](https://github.com/srmdn/go-linkchecker/issues/2) for the roadmap.
 
@@ -66,13 +68,13 @@ go-linkchecker --only-broken --output report.txt ./content/blog
 
 ## Skipping URLs
 
-Use `--skip-pattern` to skip URLs you don't want checked. Skipped URLs still appear in the report under a **SKIPPED** section so you always have full visibility — they are not silently hidden.
+Use `--skip-pattern` to skip URLs you don't want checked, and `--ignore-status` to treat specific HTTP status codes as OK. Skipped URLs still appear in the report under a **SKIPPED** section so you always have full visibility; they are not silently hidden.
 
 Common reasons to skip a URL:
 
-- **Bot-hostile sites** — some sites return HTTP 403 to all automated requests even though the page is live. They aren't broken, just blocking crawlers. Common examples: Wikipedia, OpenAI, Cloudflare community forum (`community.cloudflare.com`).
-- **Affiliate or redirect links** — short links that redirect to third-party destinations you don't control. See also `--no-follow-redirects`.
-- **Local/dev URLs** — `localhost`, `127.0.0.1`, staging domains.
+- **Bot-hostile sites** - some sites return HTTP 403 to all automated requests even though the page is live. They aren't broken, just blocking crawlers. Common examples: Wikipedia, OpenAI, Cloudflare community forum (`community.cloudflare.com`).
+- **Affiliate or redirect links** - short links that redirect to third-party destinations you don't control. See also `--no-follow-redirects`.
+- **Local/dev URLs** - `localhost`, `127.0.0.1`, staging domains.
 
 ```sh
 # Skip local URLs
@@ -83,6 +85,12 @@ go-linkchecker --skip-pattern "wikipedia\.org|openai\.com|community\.cloudflare\
 
 # Combine multiple patterns
 go-linkchecker --skip-pattern "localhost|wikipedia\.org|openai\.com|yourshortlinks\.com" ./content/blog
+
+# Ignore common bot-blocking statuses
+go-linkchecker --ignore-status 401,403 ./content/blog
+
+# Combine skip pattern and status ignores
+go-linkchecker --skip-pattern "localhost|wikipedia\.org|openai\.com" --ignore-status 401,403 ./content/blog
 ```
 
 If you use a URL shortener or affiliate links that redirect to bot-hostile destinations, use `--no-follow-redirects` instead. This treats any HTTP 3xx response as OK without following the chain:
@@ -118,16 +126,16 @@ OK LINKS (23)
 ------------------------------------------------------------
 
 SKIPPED LINKS (3)
-(matched --skip-pattern, not checked)
+(matched --skip-pattern or --ignore-status, not checked)
 
   https://wikipedia.org/...
       File: ./content/blog/my-post/index.md
   ...
 ```
 
-- **Broken** — checked and returned 4xx/5xx or a network error
-- **OK** — checked and returned 2xx/3xx
-- **Skipped** — matched `--skip-pattern`, not checked
+- **Broken** - checked and returned 4xx/5xx or a network error
+- **OK** - checked and returned 2xx/3xx
+- **Skipped** - matched `--skip-pattern` or `--ignore-status`, not checked
 
 Use `--only-broken` to hide the OK and Skipped sections (useful for email reports or CI).
 
@@ -163,8 +171,9 @@ Email delivery includes:
 | `--timeout` | `10s` | HTTP request timeout per link |
 | `--concurrency` | `5` | Concurrent link checks |
 | `--only-broken` | `false` | Only show broken links in report |
-| `--skip-pattern` | `` | Regex — skip matching URLs (shown as Skipped in report) |
-| `--no-follow-redirects` | `false` | Treat HTTP 3xx as OK — do not follow redirects |
+| `--skip-pattern` | `` | Regex - skip matching URLs (shown as Skipped in report) |
+| `--ignore-status` | `` | Comma-separated HTTP status codes to treat as OK |
+| `--no-follow-redirects` | `false` | Treat HTTP 3xx as OK - do not follow redirects |
 | `--output` | `` | Write report to file |
 | `--smtp-host` | `` | SMTP host |
 | `--smtp-port` | `465` | SMTP port (TLS) |

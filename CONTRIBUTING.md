@@ -48,11 +48,11 @@ Required in each PR:
 Prohibited in commit history:
 - AI branding lines and AI co-author trailers
 
-Install the pre-commit hook to catch issues before push:
+Install the commit-msg hook to catch banned AI attribution lines before push:
 
 ```sh
-cp scripts/pre-commit .git/hooks/pre-commit
-chmod +x .git/hooks/pre-commit
+cp scripts/commit-msg .git/hooks/commit-msg
+chmod +x .git/hooks/commit-msg
 ```
 
 ## Zero Dependencies Policy

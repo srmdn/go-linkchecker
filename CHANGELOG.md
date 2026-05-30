@@ -1,5 +1,16 @@
 # Changelog
 
+## v0.5.2 - 2026-05-30
+
+- Validate `--timeout` and `--concurrency` up front so invalid values fail fast instead of producing false healthy reports
+- Harden SMTP setup validation and default `--smtp-from` to the SMTP user when omitted
+- Replace the misnamed `pre-commit` hook with a proper `commit-msg` hook and add AI commit cleanup documentation
+
+## v0.3.1 - 2026-03-26
+
+- `--only-broken` now hides only the OK section; skipped links remain visible in reports
+- Fix: always show the Skipped section so intentional skips stay visible
+
 ## v0.5.1 - 2026-05-14
 
 - Email summary cards now stack on mobile so stats stay visible in narrow inboxes

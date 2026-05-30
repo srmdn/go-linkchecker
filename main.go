@@ -42,6 +42,17 @@ func main() {
 
 	flag.Parse()
 
+	if err := validateCLIConfig(*timeout, *concurrency); err != nil {
+		fmt.Fprintf(os.Stderr, "error: %v\n", err)
+		os.Exit(1)
+	}
+
+	smtpCfg, hasSMTP, err := buildSMTPConfig(*smtpHost, *smtpPort, *smtpUser, *smtpPass, *smtpFrom, *smtpTo)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "error: %v\n", err)
+		os.Exit(1)
+	}
+
 	dir := flag.Arg(0)
 	if dir == "" {
 		dir = "."
@@ -116,7 +127,6 @@ func main() {
 	}
 
 	// Send email if SMTP is configured
-	hasSMTP := *smtpHost != "" && *smtpUser != "" && *smtpPass != "" && *smtpTo != ""
 	if hasSMTP {
 		hasBroken := false
 		for _, r := range results {
@@ -127,15 +137,6 @@ func main() {
 		}
 
 		if !*emailOnlyBroken || hasBroken {
-			smtpCfg := SMTPConfig{
-				Host: *smtpHost,
-				Port: *smtpPort,
-				User: *smtpUser,
-				Pass: *smtpPass,
-				From: *smtpFrom,
-				To:   *smtpTo,
-			}
-
 			subject := "[go-linkchecker] Weekly report: all checked links healthy"
 			if hasBroken {
 				brokenCount := 0
@@ -175,4 +176,58 @@ func envOr(key, fallback string) string {
 		return v
 	}
 	return fallback
+}
+
+func validateCLIConfig(timeout time.Duration, concurrency int) error {
+	if timeout <= 0 {
+		return fmt.Errorf("invalid --timeout %q: must be greater than 0", timeout)
+	}
+	if concurrency <= 0 {
+		return fmt.Errorf("invalid --concurrency %d: must be greater than 0", concurrency)
+	}
+	return nil
+}
+
+func buildSMTPConfig(host, port, user, pass, from, to string) (SMTPConfig, bool, error) {
+	hasSMTP := host != "" || user != "" || pass != "" || from != "" || to != ""
+	if !hasSMTP {
+		return SMTPConfig{}, false, nil
+	}
+
+	if from == "" {
+		from = user
+	}
+
+	var missing []string
+	if host == "" {
+		missing = append(missing, "--smtp-host")
+	}
+	if user == "" {
+		missing = append(missing, "--smtp-user")
+	}
+	if pass == "" {
+		missing = append(missing, "--smtp-pass")
+	}
+	if to == "" {
+		missing = append(missing, "--smtp-to")
+	}
+	if from == "" {
+		missing = append(missing, "--smtp-from")
+	}
+	if len(missing) > 0 {
+		return SMTPConfig{}, false, fmt.Errorf("incomplete SMTP configuration: missing %s", strings.Join(missing, ", "))
+	}
+
+	if port == "" {
+		port = "465"
+	}
+
+	return SMTPConfig{
+		Host: host,
+		Port: port,
+		User: user,
+		Pass: pass,
+		From: from,
+		To:   to,
+	}, true, nil
 }

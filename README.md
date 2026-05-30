@@ -30,11 +30,48 @@ Live landing page: https://srmdn.github.io/go-linkchecker/
 
 ## Install
 
+Prebuilt binaries for Linux, macOS, and Windows are published on the
+[GitHub Releases](https://github.com/srmdn/go-linkchecker/releases) page.
+You do not need Go installed if you use a release binary.
+
+### Download A Release Binary
+
+Replace `VERSION` below with the release you want, such as `0.5.2`.
+
+Linux (`amd64`):
+
+```sh
+VERSION=0.5.2
+curl -LO "https://github.com/srmdn/go-linkchecker/releases/download/v${VERSION}/go-linkchecker_${VERSION}_linux_amd64.tar.gz"
+tar -xzf "go-linkchecker_${VERSION}_linux_amd64.tar.gz"
+./go-linkchecker --version
+```
+
+macOS (`arm64`):
+
+```sh
+VERSION=0.5.2
+curl -LO "https://github.com/srmdn/go-linkchecker/releases/download/v${VERSION}/go-linkchecker_${VERSION}_darwin_arm64.tar.gz"
+tar -xzf "go-linkchecker_${VERSION}_darwin_arm64.tar.gz"
+./go-linkchecker --version
+```
+
+Windows (`amd64`, PowerShell):
+
+```powershell
+$Version = "0.5.2"
+curl.exe -LO "https://github.com/srmdn/go-linkchecker/releases/download/v$Version/go-linkchecker_${Version}_windows_amd64.zip"
+Expand-Archive "go-linkchecker_${Version}_windows_amd64.zip" -DestinationPath .
+.\go-linkchecker.exe --version
+```
+
+### Install With Go
+
 ```sh
 go install github.com/srmdn/go-linkchecker@latest
 ```
 
-Or build from source:
+### Build From Source
 
 ```sh
 git clone https://github.com/srmdn/go-linkchecker.git
@@ -70,6 +107,12 @@ Save report to file:
 
 ```sh
 go-linkchecker --only-broken --output report.txt ./content/blog
+```
+
+Show the installed version:
+
+```sh
+go-linkchecker --version
 ```
 
 ## Skipping URLs
@@ -191,6 +234,19 @@ Email delivery includes:
 | `--smtp-from` | `` | From address |
 | `--smtp-to` | `` | Recipient address |
 | `--email-only-broken` | `true` | Only email if broken links exist |
+| `--version` | `false` | Print version and exit |
+
+## Release Binaries
+
+Tagged releases build and publish binaries for:
+
+- `linux/amd64`
+- `linux/arm64`
+- `darwin/amd64`
+- `darwin/arm64`
+- `windows/amd64`
+
+Each release includes archives and a `checksums.txt` file for verification.
 
 ## Automating with systemd
 

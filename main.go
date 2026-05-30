@@ -10,6 +10,11 @@ import (
 	"time"
 )
 
+var (
+	buildVersion = "dev"
+	buildCommit  = ""
+)
+
 func main() {
 	var (
 		timeout           = flag.Duration("timeout", 10*time.Second, "HTTP request timeout per link")
@@ -27,6 +32,7 @@ func main() {
 		smtpFrom        = flag.String("smtp-from", envOr("LINKCHECKER_SMTP_FROM", ""), "Email from address")
 		smtpTo          = flag.String("smtp-to", envOr("LINKCHECKER_SMTP_TO", ""), "Email recipient address")
 		emailOnlyBroken = flag.Bool("email-only-broken", true, "Only send email if broken links found")
+		showVersion     = flag.Bool("version", false, "Print version and exit")
 	)
 
 	flag.Usage = func() {
@@ -41,6 +47,11 @@ func main() {
 	}
 
 	flag.Parse()
+
+	if *showVersion {
+		fmt.Println(formatVersion())
+		return
+	}
 
 	if err := validateCLIConfig(*timeout, *concurrency); err != nil {
 		fmt.Fprintf(os.Stderr, "error: %v\n", err)
@@ -176,6 +187,13 @@ func envOr(key, fallback string) string {
 		return v
 	}
 	return fallback
+}
+
+func formatVersion() string {
+	if buildCommit != "" {
+		return fmt.Sprintf("go-linkchecker %s (%s)", buildVersion, buildCommit)
+	}
+	return fmt.Sprintf("go-linkchecker %s", buildVersion)
 }
 
 func validateCLIConfig(timeout time.Duration, concurrency int) error {

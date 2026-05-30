@@ -1,5 +1,12 @@
 # Changelog
 
+## v0.5.3 - Unreleased
+
+- Add a `--version` flag with release-injected version metadata
+- Add GitHub Actions CI for `go test`, `go vet`, and build verification
+- Add tag-based release automation that publishes cross-platform binaries and checksums
+- Expand README install docs for Linux, macOS, and Windows release binaries
+
 ## v0.5.2 - 2026-05-30
 
 - Validate `--timeout` and `--concurrency` up front so invalid values fail fast instead of producing false healthy reports

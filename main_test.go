@@ -6,6 +6,33 @@ import (
 	"time"
 )
 
+func TestFormatVersion(t *testing.T) {
+	originalVersion := buildVersion
+	originalCommit := buildCommit
+	t.Cleanup(func() {
+		buildVersion = originalVersion
+		buildCommit = originalCommit
+	})
+
+	t.Run("version only", func(t *testing.T) {
+		buildVersion = "v0.5.3"
+		buildCommit = ""
+
+		if got := formatVersion(); got != "go-linkchecker v0.5.3" {
+			t.Fatalf("unexpected version output: %q", got)
+		}
+	})
+
+	t.Run("version with commit", func(t *testing.T) {
+		buildVersion = "v0.5.3"
+		buildCommit = "abc1234"
+
+		if got := formatVersion(); got != "go-linkchecker v0.5.3 (abc1234)" {
+			t.Fatalf("unexpected version output: %q", got)
+		}
+	})
+}
+
 func TestValidateCLIConfig(t *testing.T) {
 	t.Run("valid config", func(t *testing.T) {
 		if err := validateCLIConfig(10*time.Second, 5); err != nil {

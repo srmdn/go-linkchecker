@@ -29,3 +29,6 @@ go-linkchecker
 # Reports
 *.txt
 report-*.txt
+
+# Release artifacts
+dist/

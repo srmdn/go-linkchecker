@@ -1,6 +1,6 @@
 # Changelog
 
-## v0.5.3 - Unreleased
+## v0.5.3 - 2026-05-30
 
 - Add a `--version` flag with release-injected version metadata
 - Add GitHub Actions CI for `go test`, `go vet`, and build verification

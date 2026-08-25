@@ -27,7 +27,7 @@ chore: upgrade to Go 1.23
 
 Types: `feat`, `fix`, `docs`, `refactor`, `perf`, `test`, `chore`, `ci`
 
-Breaking changes: add `!` after the type (`feat!: rename flag`) — this signals a MAJOR version bump.
+Breaking changes: add `!` after the type (`feat!: rename flag`); this signals a MAJOR version bump.
 
 ## Pull Requests
 
@@ -54,6 +54,14 @@ Install the commit-msg hook to catch banned AI attribution lines before push:
 cp scripts/commit-msg .git/hooks/commit-msg
 chmod +x .git/hooks/commit-msg
 ```
+
+## Releases
+
+Releases are tag-driven and built by CI. To cut a release:
+
+1. Update `CHANGELOG.md` with the new version entry.
+2. Tag and push: `git tag vX.Y.Z && git push origin vX.Y.Z`.
+3. CI (`.github/workflows/release.yml`) builds cross-platform binaries and checksums, then publishes the GitHub Release.
 
 ## Zero Dependencies Policy
 
